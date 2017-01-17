@@ -1,7 +1,14 @@
 <?php
+
+$checksLogFile = __DIR__ . '/runtime/checks.log.php';
 $resultFile = __DIR__ . '/runtime/result.log';
 if (!file_exists(dirname($resultFile)))
     mkdir(dirname($resultFile));
+
+$checksLog = [];
+if (file_exists($checksLogFile))
+    $checksLog = include $checksLogFile;
+
 file_put_contents($resultFile, '');
 
 function cecho($string, $newLine = true)
@@ -72,3 +79,5 @@ foreach ($sitemap as $url) {
     cecho(implode(' ', $output), false);
 }
 
+$checksLog[parse_url($opts['s'])['host']] = [empty($errors), date('Y-m-d H:i:s')];
+file_put_contents($checksLogFile, '<?php return ' . var_export($checksLog, true) . ';');
