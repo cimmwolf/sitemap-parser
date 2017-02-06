@@ -1,6 +1,6 @@
 <?php
 error_reporting(0);
-$resultFile = __DIR__ . '/runtime/result.log';
+$resultFile = __DIR__ . '/../runtime/result.log';
 $opts = getopt('u:');
 
 $headers = get_headers($opts['u']);
