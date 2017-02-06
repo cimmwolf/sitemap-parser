@@ -1,7 +1,7 @@
 <?php
 
-$checksLogFile = __DIR__ . '/runtime/checks.log.php';
-$resultFile = __DIR__ . '/runtime/result.log';
+$checksLogFile = __DIR__ . '/../runtime/checks.log.php';
+$resultFile = __DIR__ . '/../runtime/result.log';
 if (!file_exists(dirname($resultFile)))
     mkdir(dirname($resultFile));
 
@@ -34,21 +34,13 @@ function execInBackground($cmd)
     }
 }
 
-$opts = getopt('s:');
-
-cecho("Getting sitemap of {$opts['s']}...");
-
-$sitemap = simplexml_load_file($opts['s'] . '/sitemap.xml');
-
-if ($sitemap === false) {
-    cecho('Error');
-    exit;
-}
+$siteUrl = $arguments['site'];
 
 cecho("Checking {$sitemap->count()} links:");
 $errors = [];
 foreach ($sitemap as $url) {
-    execInBackground("php check-response.php -u $url->loc");
+    $cPath = __DIR__ .'/_check-response.php';
+    execInBackground("php $cPath -u $url->loc");
 
     usleep(500000);
 
@@ -79,5 +71,5 @@ foreach ($sitemap as $url) {
     cecho(implode(' ', $output), false);
 }
 
-$checksLog[parse_url($opts['s'])['host']] = [empty($errors), date('Y-m-d H:i:s')];
+$checksLog[parse_url($siteUrl)['host']] = [empty($errors), date('Y-m-d H:i:s')];
 file_put_contents($checksLogFile, '<?php return ' . var_export($checksLog, true) . ';');

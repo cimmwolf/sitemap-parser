@@ -1,0 +1,12 @@
+{
+    "name": "cimmwolf/sitemap-parser",
+    "require": {
+        "wp-cli/php-cli-tools": "^0.11.1"
+    },
+    "authors": [
+        {
+            "name": "Denis Beliaev",
+            "email": "cimmwolf@gmail.com"
+        }
+    ]
+}

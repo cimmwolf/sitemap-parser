@@ -1,3 +1,6 @@
-This utility parse sites sitemap.xml and check response code of all pages.
+This utility for parse sites sitemap.xml and do something with urls.
 
-Command format: `sitemap-parser -s SITE_URL`
+Commands: 
+
+  1. `sp checkurls -s SITE_URL`;
+  2. `sp metadata -s SITE_URL`;
