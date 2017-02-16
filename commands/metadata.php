@@ -34,7 +34,8 @@ foreach ($paths as $path) {
     $levels = explode('/', $path);
     $temp = &$tree;
     foreach ($levels as $key => $level) {
-        if (!empty($level)) {
+        // в условии неочевидное преобразование для анализа ссылки на главную страницу
+        if (!empty($level) OR (empty(array_filter($levels)) AND $level = '/')) {
             if (!isset($temp[$level]))
                 $temp[$level] = [];
 
@@ -52,7 +53,7 @@ $previous = '';
 $progress = new \cli\progress\Bar(' Getting meta data', count($paths), 1000);
 walker($tree, function (&$self, $level, $path) use ($arguments, &$previous, $resultFile, &$progress) {
     $data = [];
-    $page = file_get_contents($arguments['site'] . $path);
+    $page = file_get_contents($arguments['site'] . $self['path']);
     preg_match('~<title>(.*?)</title>~', $page, $temp);
     $data[] = $temp[1];
     preg_match('~<meta name="keywords" content="(.*?)">~', $page, $temp);
