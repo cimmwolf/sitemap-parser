@@ -1,13 +1,23 @@
 {
-    "name": "cimmwolf/sitemap-parser",
-    "require": {
-        "wp-cli/php-cli-tools": "^0.11.1",
-        "mnapoli/silly": "^1.7"
-    },
-    "authors": [
-        {
-            "name": "Denis Beliaev",
-            "email": "cimmwolf@gmail.com"
-        }
-    ]
+  "name": "cimmwolf/sitemap-parser",
+  "autoload": {
+    "psr-4": {
+      "DenisBeliaev\\SitemapParser\\": "src"
+    }
+  },
+  "require": {
+    "wp-cli/php-cli-tools": "^0.11.1",
+    "mnapoli/silly": "^1.7",
+    "ext-curl": "^7.0",
+    "ext-sqlite3": "0.7-dev"
+  },
+  "authors": [
+    {
+      "name": "Denis Beliaev",
+      "email": "cimmwolf@gmail.com"
+    }
+  ],
+  "require-dev": {
+    "phpunit/phpunit": "^6.5"
+  }
 }
