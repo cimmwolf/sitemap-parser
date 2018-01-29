@@ -1,4 +1,8 @@
 <?php
+
+use DenisBeliaev\SitemapParser\Link;
+use DenisBeliaev\SitemapParser\Page;
+
 require_once __DIR__ . '/config.php';
 
 $opts = getopt('s:p:t:');
@@ -40,39 +44,37 @@ foreach ($items as $item) {
     unset($stm);
 
     if ($task == 'parse-links') {
-        $urlInfo = parse_url($item);
-
-        preg_match_all('~<a[^>]+href=[\'"]([^\'"]+)[\'"]~imu', $content, $matches);
-        $links = array_unique($matches[1]);
-        $links = array_filter($links, function ($value) {
-            return $value != '/' && substr($value, 0, 1) != '#' && substr($value, 0, 7) != 'mailto:' && substr($value, 0, 4) != 'tel:';
-        });
+        $Page = new Page($content, $item);
+        $links = $Page->links;
         foreach ($links as &$link) {
-            if (substr($link, 0, 2) == '//') {
-                $link = $urlInfo['scheme'] . ':' . $link;
-            } elseif (substr($link, 0, 1) == '/') {
-                $link = $urlInfo['scheme'] . '://' . $urlInfo['host'] . $link;
-            }
-            $link = explode('#', $link)[0];
-            $link = urldecode($link);
+            $link = Link::normalize($link, $Page->base);
         }
-        $links = array_unique($links);
+        $links = array_unique(array_filter($links));
+
+        foreach ($links as $key => &$link) {
+            $link = [$item, $Page->links[$key], $link];
+        }
         $links = array_filter($links, function ($value) use ($pdo) {
             $stm = $pdo->prepare('SELECT COUNT(url) FROM pages WHERE url=:url');
-            $stm->execute([':url' => $value]);
+            $stm->execute([':url' => $value[2]]);
             $result = $stm->fetchColumn();
             return $result == 0;
         });
         if (!empty($links)) {
-            $links = array_values($links);
+            $parameters = [];
+            foreach ($links as $link) {
+                $parameters[] = $link[0];
+                $parameters[] = $link[1];
+                $parameters[] = $link[2];
+            }
 
             $pdo->setAttribute(PDO::ATTR_TIMEOUT, 100);
-            $stm = $pdo->prepare('INSERT OR IGNORE INTO links (url) VALUES ' . implode(',', array_pad([], count($links), '(?)')));
+            $stm = $pdo->prepare('INSERT OR IGNORE INTO links (`page`, link, url) VALUES ' . implode(',', array_pad([], count($links), '(?,?,?)')));
             if ($stm == false) {
                 fwrite(STDERR, $pdo->errorInfo()[2] . PHP_EOL);
                 exit;
             }
-            $stm->execute($links);
+            $stm->execute($parameters);
             unset($stm);
         }
     }

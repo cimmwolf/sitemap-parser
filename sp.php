@@ -113,7 +113,7 @@ $app->command('links website_url', function ($website_url, OutputInterface $outp
 
     $pdo = new PDO(DSN);
     $pdo->query('DROP TABLE IF EXISTS links');
-    $pdo->query('CREATE TABLE links (url TEXT NOT NULL, status TEXT)');
+    $pdo->query('CREATE TABLE links (page TEXT NOT NULL, link TEXT NOT NULL, url TEXT NOT NULL)');
     $pdo->query('CREATE UNIQUE INDEX links_url_uindex ON links (url);');
     unset($pdo);
 
