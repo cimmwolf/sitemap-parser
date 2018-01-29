@@ -60,6 +60,7 @@ function runProcesses($pages, $task, &$output)
  * @param $website_url
  * @param $output OutputInterface
  * @return array
+ * @throws Exception
  */
 function getPages($website_url, &$output)
 {
@@ -67,8 +68,7 @@ function getPages($website_url, &$output)
     $sitemap = simplexml_load_file($website_url . '/sitemap.xml');
 
     if ($sitemap === false) {
-        $output->writeln("Can't get $website_url . /sitemap.xml");
-        exit;
+        throw new Exception("Can't get $website_url . /sitemap.xml");
     }
 
     $pages = [];
@@ -94,12 +94,22 @@ function execInBackground($cmd)
 $app = new Silly\Application();
 
 $app->command('check website_url', function ($website_url, OutputInterface $output) {
-    $pages = getPages($website_url, $output);
+    try {
+        $pages = getPages($website_url, $output);
+    } catch (Exception $exception) {
+        $output->writeln($exception->getMessage());
+        exit;
+    }
     runProcesses($pages, 'check', $output);
 });
 
 $app->command('links website_url', function ($website_url, OutputInterface $output) {
-    $pages = getPages($website_url, $output);
+    try {
+        $pages = getPages($website_url, $output);
+    } catch (Exception $exception) {
+        $output->writeln($exception->getMessage());
+        exit;
+    };
 
     $pdo = new PDO(DSN);
     $pdo->query('DROP TABLE IF EXISTS links');
@@ -156,7 +166,7 @@ $app->command('metadata website_url', function ($website_url, OutputInterface $o
         $temp = &$tree;
         foreach ($levels as $key => $level) {
             // в условии неочевидное преобразование для анализа ссылки на главную страницу
-            if (!empty($level) OR (empty(array_filter($levels)) AND $level = '/')) {
+            if (!empty($level) || (empty(array_filter($levels)) && $level = '/')) {
                 if (!isset($temp[$level]))
                     $temp[$level] = [];
 
