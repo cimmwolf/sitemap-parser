@@ -9,41 +9,37 @@ class LinkTest extends \PHPUnit\Framework\TestCase
 {
     public function testCreation()
     {
-        $link = new Link('#');
-        $this->assertEquals('', (string)$link);
+        $link = Link::normalize('#', 'http://example.com');
+        $this->assertEquals('', $link);
 
-        $link = new Link('#header');
-        $this->assertEquals('', (string)$link);
+        $link = Link::normalize('#header', 'https://example.com');
+        $this->assertEquals('', $link);
 
-        $link = new Link('/');
-        $this->assertEquals('', (string)$link);
-        $link = new Link('/', 'http://example.com/page');
-        $this->assertEquals('http://example.com', (string)$link);
+        $link = Link::normalize('/', 'http://example.com/page');
+        $this->assertEquals('http://example.com', $link);
 
-        $link = new Link('mailto:mail@vistro.ru');
-        $this->assertEquals('', (string)$link);
+        $link = Link::normalize('mailto:mail@vistro.ru', 'http://domain.name');
+        $this->assertEquals('', $link);
 
-        $link = new Link('tel:+79998887766');
-        $this->assertEquals('', (string)$link);
+        $link = Link::normalize('tel:+79998887766', 'http://domain.name');
+        $this->assertEquals('', $link);
 
-        $link = new Link('/page/subpage');
-        $this->assertEquals('', (string)$link);
-        $link = new Link('/page/subpage', 'http://example.com/category');
-        $this->assertEquals('http://example.com/page/subpage', (string)$link);
+        $link = Link::normalize('/page/subpage', 'http://example.com/category');
+        $this->assertEquals('http://example.com/page/subpage', $link);
 
-        $link = new Link('//vistro.ru');
-        $this->assertEquals('http://vistro.ru', (string)$link);
-        $link = new Link('//vistro.ru', 'https://example.com');
-        $this->assertEquals('https://vistro.ru', (string)$link);
+        $link = Link::normalize('//vistro.ru', 'https://example.com');
+        $this->assertEquals('https://vistro.ru', $link);
 
-        $link = new Link('http://chopacho.ru');
-        $this->assertEquals('http://chopacho.ru', (string)$link);
-        $link = new Link('http://chopacho.ru', 'https://example.com');
-        $this->assertEquals('http://chopacho.ru', (string)$link);
+        $link = Link::normalize('http://chopacho.ru', 'https://example.com');
+        $this->assertEquals('http://chopacho.ru', $link);
 
-        $link = new Link('https://chopacho.ru');
-        $this->assertEquals('https://chopacho.ru', (string)$link);
-        $link = new Link('https://chopacho.ru', 'http://example.com');
-        $this->assertEquals('https://chopacho.ru', (string)$link);
+        $link = Link::normalize('https://chopacho.ru', 'http://example.com');
+        $this->assertEquals('https://chopacho.ru', $link);
+
+        $link = Link::normalize('foo/bar', 'http://example.com/page');
+        $this->assertEquals('http://example.com/page/foo/bar', $link);
+
+        $link = Link::normalize('<a href="/foo/bar" class="link">Link text</a>', 'http://example.com');
+        $this->assertEquals('http://example.com/foo/bar', $link);
     }
 }
