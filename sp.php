@@ -54,6 +54,7 @@ function runProcesses($pages, $task, &$output)
         usleep(500000);
     }
     $progress->finish();
+    $output->writeln('');
 }
 
 /**
@@ -90,6 +91,50 @@ function execInBackground($cmd)
     }
 }
 
+/**
+ * @param $domain
+ * @param $output OutputInterface
+ */
+function saveCheckReport($domain, &$output)
+{
+    $output->write('  Saving report...');
+    $result = new PDO(DSN);
+    $report = new PDO('sqlite:' . __DIR__ . "/reports/{$domain}.sqlite3");
+    $report->query('DROP TABLE IF EXISTS `check`');
+    $report->query('CREATE TABLE `check` (url TEXT NOT NULL, status TEXT NOT NULL)');
+    $stm = $report->prepare('INSERT INTO `check` (url, status) VALUES (:url, :status)');
+    $checks = $result->query('SELECT url, status FROM pages')->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($checks as $check) {
+        $stm->execute($check);
+    }
+    $output->writeln('  ok');
+}
+
+/**
+ * @param $domain
+ * @param $output OutputInterface
+ */
+function saveLinksReport($domain, &$output)
+{
+    $output->write('  Saving report...');
+    $result = new PDO(DSN);
+    $report = new PDO('sqlite:' . __DIR__ . "/reports/{$domain}.sqlite3");
+    $report->query('DROP TABLE IF EXISTS links');
+    $report->query('CREATE TABLE links (page TEXT NOT NULL, link TEXT NOT NULL, url TEXT NOT NULL, status TEXT NOT NULL )');
+    $stm = $report->prepare('INSERT INTO links (page, link, url, status) VALUES (:page, :link, :url, :status)');
+    $checks = $result->query('SELECT url, status FROM pages')->fetchAll();
+    foreach ($checks as $check) {
+        $stm2 = $result->prepare('SELECT page, link FROM links WHERE url=:url');
+        $stm2->execute([':url' => $check['url']]);
+        $parameters = array_merge($check, $stm2->fetch(PDO::FETCH_ASSOC));
+        $stm->execute($parameters);
+    }
+    $output->writeln('  ok');
+}
+
+if (!file_exists(__DIR__ . '/reports')) {
+    mkdir(__DIR__ . '/reports');
+}
 
 $app = new Silly\Application();
 
@@ -101,6 +146,8 @@ $app->command('check website_url', function ($website_url, OutputInterface $outp
         exit;
     }
     runProcesses($pages, 'check', $output);
+
+    saveCheckReport(parse_url($website_url, PHP_URL_HOST), $output);
 });
 
 $app->command('links website_url', function ($website_url, OutputInterface $output) {
@@ -119,15 +166,18 @@ $app->command('links website_url', function ($website_url, OutputInterface $outp
 
     runProcesses($pages, 'parse-links', $output);
 
+    $domain = parse_url($website_url, PHP_URL_HOST);
+    saveCheckReport($domain, $output);
+
     $pdo = new PDO(DSN);
-//    $pdo->query("DELETE FROM links WHERE url NOT LIKE 'http%'");
     $pages = $pdo->query('SELECT url FROM links')->fetchAll(PDO::FETCH_COLUMN);
     unset($pdo);
 
-    $output->writeln('');
     $output->writeln('  Checking founded links...');
 
     runProcesses($pages, 'check', $output);
+
+    saveLinksReport($domain, $output);
 });
 
 $app->command('metadata website_url', function ($website_url, OutputInterface $output) {
