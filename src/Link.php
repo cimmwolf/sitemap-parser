@@ -11,7 +11,7 @@ namespace DenisBeliaev\SitemapParser;
  */
 class Link
 {
-    static function normalize($link, $base)
+    public static function normalize($link, $base)
     {
         if (substr($link, 0, 2) == '<a' && substr($link, -4, 4) == '</a>') {
             preg_match('~href=[\'"](.*?)[\'"]~i', $link, $matches);

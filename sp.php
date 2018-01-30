@@ -143,7 +143,7 @@ $app->command('check website_url', function ($website_url, OutputInterface $outp
         $pages = getPages($website_url, $output);
     } catch (Exception $exception) {
         $output->writeln($exception->getMessage());
-        exit;
+        return;
     }
     runProcesses($pages, 'check', $output);
 
@@ -155,7 +155,7 @@ $app->command('links website_url', function ($website_url, OutputInterface $outp
         $pages = getPages($website_url, $output);
     } catch (Exception $exception) {
         $output->writeln($exception->getMessage());
-        exit;
+        return;
     };
 
     $pdo = new PDO(DSN);
