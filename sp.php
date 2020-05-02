@@ -194,8 +194,9 @@ $app->command('metadata website_url', function ($website_url, OutputInterface $o
                 $function($branch['_self'], $level, $path);
                 unset($branch['_self']);
             }
-            if (count($branch) > 0)
+            if (count($branch) > 0) {
                 walker($branch, $function, $level + 1, "$path/$branchName");
+            }
         }
     }
 
@@ -206,7 +207,7 @@ $app->command('metadata website_url', function ($website_url, OutputInterface $o
 
     $paths = [];
     foreach ($sitemap as $url) {
-        $paths[] = parse_url($url->loc, PHP_URL_PATH);
+        $paths[] = parse_url(rtrim($url->loc, "/"), PHP_URL_PATH);
     }
     natsort($paths);
 
@@ -217,11 +218,13 @@ $app->command('metadata website_url', function ($website_url, OutputInterface $o
         foreach ($levels as $key => $level) {
             // в условии неочевидное преобразование для анализа ссылки на главную страницу
             if (!empty($level) || (empty(array_filter($levels)) && $level = '/')) {
-                if (!isset($temp[$level]))
+                if (!isset($temp[$level])) {
                     $temp[$level] = [];
+                }
 
-                if ($key == (count($levels) - 1))
+                if ($key == (count($levels) - 1)) {
                     $temp[$level]['_self'] = ['path' => $path];
+                }
 
                 $temp = &$temp[$level];
             }
@@ -243,17 +246,20 @@ $app->command('metadata website_url', function ($website_url, OutputInterface $o
         $data[] = $temp[1] ?? '';
 
         if ($data == $previous) {
-            foreach ($data as &$item)
+            foreach ($data as &$item) {
                 $item = '--//--';
-        } else
+            }
+        } else {
             $previous = $data;
+        }
 
         $row = [];
         $row[] = $website_url . $self['path'];
         $row = array_merge($row, $data);
 
-        foreach ($row as &$item)
+        foreach ($row as &$item) {
             $item = '"' . $item . '"';
+        }
 
         $line = implode(',', $row) . PHP_EOL;
         file_put_contents($resultFile, $line, FILE_APPEND);

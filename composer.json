@@ -9,7 +9,8 @@
     "wp-cli/php-cli-tools": "^0.11.1",
     "mnapoli/silly": "^1.7",
     "ext-curl": "^7.0",
-    "ext-sqlite3": "0.7-dev"
+    "ext-sqlite3": "*",
+    "ext-simplexml": "*"
   },
   "authors": [
     {
